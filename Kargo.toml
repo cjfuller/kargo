@@ -1,0 +1,8 @@
+[package]
+name = "kargo"
+kotlin_version = "1.6.10"
+
+[dependencies]
+"org.jetbrains.kotlinx:kotlinx-cli" = "0.3.4"
+"io.ktor:ktor-client-core" = "1.6.7"
+"io.ktor:ktor-client-apache" = "1.6.7"
