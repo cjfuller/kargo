@@ -5,11 +5,16 @@ import kargo.DEPS
 import kargo.KARGO_DIR
 import kargo.LOCK
 import kargo.Subprocess
+import kargo.recListPath
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.writeText
@@ -29,6 +34,14 @@ object Coursier : Tool {
             addArgs(*specs.toTypedArray())
         }.getOrThrow().check_output()
         LOCK.writeText(deps)
+    }
+
+    fun clear_deps() {
+        if (DEPS.exists()) {
+            for (jar in recListPath(DEPS).filter { it.extension == "jar" }) {
+                jar.deleteExisting()
+            }
+        }
     }
 
     fun fetch_deps() {

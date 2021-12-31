@@ -1,8 +1,13 @@
 [package]
 name = "kargo"
 kotlin_version = "1.6.10"
+use_serialization_plugin = true
 
 [dependencies]
-"org.jetbrains.kotlinx:kotlinx-cli" = "0.3.4"
+"org.jetbrains.kotlinx:kotlinx-cli-jvm" = "0.3.4"
+"org.jetbrains.kotlin:kotlin-reflect" = "1.6.10"
 "io.ktor:ktor-client-core" = "1.6.7"
 "io.ktor:ktor-client-apache" = "1.6.7"
+"com.uchuhimo:konf" = "1.1.2"
+"com.uchuhimo:konf-toml" = "1.1.2"
+"net.lingala.zip4j:zip4j" = "2.9.1"

@@ -17,6 +17,7 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:$ktor_version")
     implementation("com.uchuhimo:konf:1.1.2")
     implementation("com.uchuhimo:konf-toml:1.1.2")
+    implementation("net.lingala.zip4j:zip4j:2.9.1")
 }
 
 

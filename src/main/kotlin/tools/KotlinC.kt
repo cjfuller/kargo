@@ -4,24 +4,40 @@ import kargo.Config
 import kargo.KARGO_DIR
 import kargo.Subprocess
 import kargo.TARGET
+import kargo.isWindows
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
+import kotlin.io.path.name
 
-object KotlinC : Tool {
+enum class KotlinCBundle(val relpath: Path) : BundledTool {
+    KOTLINC(if (isWindows()) { Path("kotlinc/bin/kotlinc.bat") } else { Path("kotlinc/bin/kotlinc") }),
+    SER_PLUGIN(Path("kotlinc/lib/kotlinx-serialization-compiler-plugin.jar"));
+
+    override fun path(): Path = relpath
+}
+
+object KotlinC : ToolZipBundle<KotlinCBundle> {
     override val version: String by lazy { Config.global.kotlinVersion }
-    override fun executable(): Path = KARGO_DIR / "kotlinc"
+    override fun zipFileTarget(): Path = KARGO_DIR / "kotlinc.zip"
+    // The kotlin zip has a top-level `kotlinc` directory, so we extract directly into KARGO_DIR.
+    override fun folderUnzipTarget(): Path = KARGO_DIR
     override fun downloadURL(version: String): String =
-        "https://github.com/JetBrains/kotlin/releases/download/v${version}/kotlin-compiler-${version}.zip"
+        "https://github.com/JetBrains/kotlin/releases/download/v$version/kotlin-compiler-$version.zip"
 
     fun build() {
-        Subprocess.jar(executable().absolutePathString()) {
-            addArgs("-cp", Config.depsJarFiles().joinToString(File.pathSeparator))
+        Subprocess.new {
+            command = path(KotlinCBundle.KOTLINC).absolutePathString()
             addArgs("-d", (TARGET / "${Config.global.name}.jar").absolutePathString())
             // TODO(colin): include or not based on package type
             arg("-include-runtime")
-            addArgs(*Config.sourceFiles().toTypedArray())
+            addArgs("-cp", Config.depsJarFiles().joinToString(File.pathSeparator))
+            if (Config.global.useSerializationPlugin) {
+                arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
+            }
+            arg(Config.global.srcDir.absolutePathString())
         }.getOrThrow().check_output()
     }
 }

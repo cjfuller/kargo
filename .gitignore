@@ -3,6 +3,8 @@
 
 # Ignore Gradle build output directory
 build
+# kargo output directory
+target
 
 .idea
 .kargo
