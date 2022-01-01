@@ -1,8 +1,10 @@
 package kargo
 
 import kotlinx.cli.ArgParser
+import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
+import kotlin.io.path.Path
 
 @ExperimentalCli
 fun main(args: Array<String>) {
@@ -50,6 +52,13 @@ fun main(args: Array<String>) {
         }
     }
 
+    class Run(val moreArgs: List<String>) : Subcommand("run", "Run the jar produced by `build` or the supplied script") {
+        val script: String? by parser.option(ArgType.String, shortName = "s", description = "Script file to run")
+        override fun execute() {
+            kargo.commands.Run(script = script?.let { Path(it) }, runArgs = moreArgs).run()
+        }
+    }
+
     val nativeImageDesc = (
         "Build a native image using GraalVM for the current OS. You must already have " +
             "a working install of GraalVM, including the native-image tool, for this to work."
@@ -60,6 +69,9 @@ fun main(args: Array<String>) {
         }
     }
 
-    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble(), GraalNativeImage())
-    parser.parse(args)
+    val argsForParser = args.takeWhile { it != "--" }
+    val argsToPassOn = args.dropWhile { it != "--" }.dropWhile { it == "--" }
+
+    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble(), GraalNativeImage(), Run(argsToPassOn))
+    parser.parse(argsForParser.toTypedArray())
 }

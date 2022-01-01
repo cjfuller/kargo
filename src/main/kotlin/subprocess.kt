@@ -21,14 +21,13 @@ data class Subprocess(
         this.args.add(a)
     }
 
-    fun addArgs(vararg args: String) {
-        for (a in args) {
+    fun addArgs(vararg multiArgs: String) {
+        for (a in multiArgs) {
             arg(a)
         }
     }
 
     fun run(): Result<Process> = this.runCatching {
-        println("$command ${args.joinToString(" ")}")
         ProcessBuilder(this.command, *this.args.toTypedArray())
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .redirectOutput(stdout)

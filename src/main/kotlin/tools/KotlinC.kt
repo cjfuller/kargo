@@ -36,13 +36,29 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         super.download()
     }
 
+    fun depsClasspath(): String = Config.depsJarFiles().joinToString(File.pathSeparator)
+
+    fun script(script: Path, scriptArgs: List<String>) {
+        Subprocess.new {
+            command = path(KotlinCBundle.KOTLINC).absolutePathString()
+            addArgs("-script", script.absolutePathString())
+            addArgs("-cp", listOf(depsClasspath(), outputJar().absolutePathString()).joinToString(File.pathSeparator))
+            if (Config.global.useSerializationPlugin) {
+                arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
+            }
+            if (scriptArgs.isNotEmpty()) {
+                addArgs("--", *scriptArgs.toTypedArray())
+            }
+        }.getOrThrow().run_check()
+    }
+
     fun build() {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
             addArgs("-d", outputJar().absolutePathString())
             // TODO(colin): include or not based on package type
             arg("-include-runtime")
-            addArgs("-cp", Config.depsJarFiles().joinToString(File.pathSeparator))
+            addArgs("-cp", depsClasspath())
             if (Config.global.useSerializationPlugin) {
                 arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
             }
