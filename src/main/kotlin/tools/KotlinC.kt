@@ -10,7 +10,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
-import kotlin.io.path.name
+import kotlin.io.path.exists
 
 enum class KotlinCBundle(val relpath: Path) : BundledTool {
     KOTLINC(if (isWindows()) { Path("kotlinc/bin/kotlinc.bat") } else { Path("kotlinc/bin/kotlinc") }),
@@ -26,11 +26,20 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
     override fun folderUnzipTarget(): Path = KARGO_DIR
     override fun downloadURL(version: String): String =
         "https://github.com/JetBrains/kotlin/releases/download/v$version/kotlin-compiler-$version.zip"
+    fun outputJar(): Path = TARGET / "${Config.global.name}.jar"
+
+    override fun download() {
+        val kotlincDir = (folderUnzipTarget() / "kotlinc")
+        if (kotlincDir.exists()) {
+            kotlincDir.toFile().deleteRecursively()
+        }
+        super.download()
+    }
 
     fun build() {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
-            addArgs("-d", (TARGET / "${Config.global.name}.jar").absolutePathString())
+            addArgs("-d", outputJar().absolutePathString())
             // TODO(colin): include or not based on package type
             arg("-include-runtime")
             addArgs("-cp", Config.depsJarFiles().joinToString(File.pathSeparator))

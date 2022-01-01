@@ -11,7 +11,6 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
-import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.extension

@@ -1,16 +1,20 @@
 package kargo.tools
 
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.readBytes
+import kargo.KARGO_DIR
 import kotlinx.coroutines.runBlocking
 import net.lingala.zip4j.ZipFile
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.notExists
 import kotlin.io.path.writeBytes
 
 interface Tool {
@@ -20,6 +24,7 @@ interface Tool {
 
     suspend fun download() {
         val client = HttpClient()
+        executable().deleteIfExists()
         runBlocking {
             val resp = client.get<HttpResponse>(downloadURL(version))
             val exe = resp.readBytes()
@@ -38,17 +43,21 @@ interface ToolZipBundle<T : BundledTool> {
     fun folderUnzipTarget(): Path
     fun downloadURL(version: String): String
 
-    suspend fun download() {
-        val client = HttpClient()
-        runBlocking {
+    fun download() {
+        val client = HttpClient(Apache)
+        zipFileTarget().deleteIfExists()
+        val zipContents = runBlocking {
             val resp = client.get<HttpResponse>(downloadURL(version))
-            val zipContents = resp.readBytes()
-            zipFileTarget().writeBytes(zipContents)
-            if (!folderUnzipTarget().exists()) {
-                folderUnzipTarget().createDirectories()
-            }
-            ZipFile(zipFileTarget().absolutePathString()).extractAll(folderUnzipTarget().absolutePathString())
+            resp.readBytes()
         }
+        zipFileTarget().writeBytes(zipContents)
+        if (folderUnzipTarget().exists() && folderUnzipTarget() != KARGO_DIR) {
+            folderUnzipTarget().toFile().deleteRecursively()
+        }
+        if (folderUnzipTarget().notExists()) {
+            folderUnzipTarget().createDirectories()
+        }
+        ZipFile(zipFileTarget().absolutePathString()).extractAll(folderUnzipTarget().absolutePathString())
     }
 
     fun path(tool: T): Path =

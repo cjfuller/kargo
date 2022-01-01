@@ -44,6 +44,12 @@ fun main(args: Array<String>) {
         }
     }
 
-    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint())
+    class Assemble : Subcommand("assemble", "Assemble a fat jar with all deps included") {
+        override fun execute() {
+            kargo.commands.Assemble.run()
+        }
+    }
+
+    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble())
     parser.parse(args)
 }

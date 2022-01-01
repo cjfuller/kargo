@@ -1,6 +1,5 @@
 package kargo
 
-import com.uchuhimo.konf.ConfigSpec
 import com.uchuhimo.konf.source.toml
 import com.uchuhimo.konf.toValue
 import java.nio.file.Path
