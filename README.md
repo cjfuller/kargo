@@ -29,7 +29,8 @@ After this file is created, you'll need to run `kargo init`, which will download
 Dependencies can be added using syntax like `"io.ktor:ktor-client-core" = "1.6.7"`, one line per dependency in the
 `[dependencies]` section of your `Kargo.toml`. After you initially set up your project and whenever you add a dependency, you
 should lock the dependencies with `kargo lock`. This will resolve all direct and transitive dependencies to consistent versions
-and write them to the `Kargo.lock` file. (You should commit Kargo.lock to version control.)
+and write them to the `Kargo.lock` file. (You should commit `Kargo.lock` to version control unless you're building a library
+for other projects to consume.)
 
 Once you've locked dependencies (and every time you re-lock them), run `kargo deps`, which will vendor the locked version of all
 dependencies into `.kargo/deps`. (If needed, you can put the jars in this directory on the classpath for your editor / IDE for
