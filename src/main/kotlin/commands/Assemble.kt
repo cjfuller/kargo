@@ -24,10 +24,26 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readBytes
 import kotlin.io.path.readLines
 import kotlin.io.path.relativeTo
+import kotlin.io.path.writeBytes
 
 object Assemble : Runnable {
     val assemblyDir = KARGO_DIR / "assembly"
     val metaInf = Path("META-INF")
+    val outputJar = (TARGET / "assembly" / (KotlinC.outputJar().relativeTo(TARGET)))
+
+    val windowsStub = """
+        @echo off
+        java -jar "%~dp0%~n0%~x0" %*
+        exit /b
+        
+    """.trimIndent().replace("\n", "\r\n")
+    val unixStub = """
+        #!/bin/sh
+        THIS_FILE=`which "${'$'}0" 2>/dev/null`
+        [ ${'$'}? -gt 0 -a -f "${'$'}0" ] && THIS_FILE="./${'$'}0"
+        exec java -jar ${'$'}THIS_FILE "${'$'}@"
+        
+    """.trimIndent()
 
     fun copyJarContents(jar: Path, includeMetaInf: Boolean = false) {
         val targetDir = createTempDirectory()
@@ -76,13 +92,11 @@ object Assemble : Runnable {
             copyJarContents(Path(dep), includeMetaInf = false)
         }
         copyJarContents(KotlinC.outputJar(), includeMetaInf = true)
-        val outDir = TARGET / "assembly"
-        if (outDir.notExists()) {
-            outDir.createDirectories()
+        if (outputJar.parent.notExists()) {
+            outputJar.parent.createDirectories()
         }
-        val outFile = (outDir / (KotlinC.outputJar().relativeTo(TARGET)))
-        outFile.deleteIfExists()
-        val zip = ZipFile(outFile.absolutePathString())
+        outputJar.deleteIfExists()
+        val zip = ZipFile(outputJar.absolutePathString())
         for (entry in assemblyDir.listDirectoryEntries()) {
             if (entry.isRegularFile()) {
                 zip.addFile(entry.toFile())
@@ -90,5 +104,10 @@ object Assemble : Runnable {
                 zip.addFolder(entry.toFile())
             }
         }
+        val assemblyContents = outputJar.readBytes()
+        val winAssembly = windowsStub.toByteArray() + assemblyContents
+        (outputJar.parent / (Config.global.name + ".bat")).writeBytes(winAssembly)
+        val unixAssembly = unixStub.toByteArray() + assemblyContents
+        (outputJar.parent / Config.global.name).writeBytes(unixAssembly)
     }
 }

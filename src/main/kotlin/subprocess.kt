@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.nio.file.Path
 
 class NoCommandProvidedException : Exception("No command provided. Ensure you build with `command = ...`.")
 class CalledSubprocessException(val status: Int) : Exception("Subprocess exited with status $status.")
@@ -14,6 +15,7 @@ data class Subprocess(
     private var stdout: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT,
     private var stderr: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT,
     private var captureOut: Boolean = false,
+    var workingDirectory: Path? = null
 ) {
     fun arg(a: String) {
         this.args.add(a)
@@ -30,6 +32,7 @@ data class Subprocess(
         ProcessBuilder(this.command, *this.args.toTypedArray())
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .redirectOutput(stdout)
+            .let { workingDirectory?.let { dir -> it.directory(dir.toFile()) } ?: it }
             .redirectError(stderr)
             .start()
     }

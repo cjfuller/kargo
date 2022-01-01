@@ -50,6 +50,16 @@ fun main(args: Array<String>) {
         }
     }
 
-    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble())
+    val nativeImageDesc = (
+        "Build a native image using GraalVM for the current OS. You must already have " +
+            "a working install of GraalVM, including the native-image tool, for this to work."
+        )
+    class GraalNativeImage : Subcommand("native-image", nativeImageDesc) {
+        override fun execute() {
+            kargo.commands.GraalNativeImage.run()
+        }
+    }
+
+    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble(), GraalNativeImage())
     parser.parse(args)
 }
