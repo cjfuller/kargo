@@ -131,6 +131,7 @@ build files used for bootstrapping. The gradle files will be removed at some lat
   without having to run the time-consuming assembly step
 - a number of other configuration options (option to turn off including the kotlin runtime in the jar,
   support of other source / test layouts, etc.)
+- `kargo run <script>` support for `.kts` scripts, with classpath set appopriately for the project environment
 
 ### Medium-term
 - better support for building / publishing libraries, rather than runnable applications
