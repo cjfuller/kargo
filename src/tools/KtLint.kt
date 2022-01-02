@@ -1,7 +1,6 @@
 package kargo.tools
 
 import kargo.Config
-import kargo.KARGO_DIR
 import kargo.Subprocess
 import java.io.File
 import java.nio.file.Path
@@ -11,7 +10,7 @@ import kotlin.io.path.div
 object KtLint : Tool {
     override val version = "0.43.2"
 
-    override fun executable(): Path = KARGO_DIR / "ktlint"
+    override fun executable(): Path = Config.global.kargoDir / "ktlint"
 
     override fun downloadURL(version: String): String =
         "https://github.com/pinterest/ktlint/releases/download/$version/ktlint"

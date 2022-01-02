@@ -1,8 +1,6 @@
 package kargo.commands
 
 import kargo.Config
-import kargo.KARGO_DIR
-import kargo.TARGET
 import kargo.recListPath
 import kargo.tools.KotlinC
 import net.lingala.zip4j.ZipFile
@@ -27,9 +25,11 @@ import kotlin.io.path.relativeTo
 import kotlin.io.path.writeBytes
 
 object Assemble : Runnable {
-    val assemblyDir = KARGO_DIR / "assembly"
+    val assemblyDir: Path
+        get() = Config.global.kargoDir / "assembly"
     val metaInf = Path("META-INF")
-    val outputJar = (TARGET / "assembly" / (KotlinC.outputJar().relativeTo(TARGET)))
+    val outputJar: Path
+        get() = (Config.global.targetDir / "assembly" / (KotlinC.outputJar().relativeTo(Config.global.targetDir)))
 
     val windowsStub = """
         @echo off
@@ -88,8 +88,8 @@ object Assemble : Runnable {
             assemblyDir.toFile().deleteRecursively()
         }
         assemblyDir.createDirectories()
-        for (dep in Config.depsJarFiles()) {
-            copyJarContents(Path(dep), includeMetaInf = false)
+        for (dep in Config.global.depsJarFiles()) {
+            copyJarContents(dep, includeMetaInf = false)
         }
         copyJarContents(KotlinC.outputJar(), includeMetaInf = true)
         if (outputJar.parent.notExists()) {

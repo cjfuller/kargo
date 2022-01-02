@@ -1,9 +1,6 @@
 package kargo.tools
 
 import kargo.Config
-import kargo.DEPS
-import kargo.KARGO_DIR
-import kargo.LOCK
 import kargo.Subprocess
 import kargo.recListPath
 import kotlin.io.path.Path
@@ -21,7 +18,7 @@ import kotlin.io.path.writeText
 object Coursier : Tool {
     override val version = "2.0.13"
 
-    override fun executable() = KARGO_DIR / "cs"
+    override fun executable() = Config.global.kargoDir / "cs"
 
     override fun downloadURL(version: String): String =
         "https://github.com/coursier/coursier/releases/download/v$version/coursier"
@@ -32,34 +29,32 @@ object Coursier : Tool {
             arg("resolve")
             addArgs(*specs.toTypedArray())
         }.getOrThrow().check_output()
-        LOCK.writeText(deps)
+        Config.global.lockFile.writeText(deps)
     }
 
     fun clear_deps() {
-        if (DEPS.exists()) {
-            for (jar in recListPath(DEPS).filter { it.extension == "jar" }) {
+        if (Config.global.depsDir.exists()) {
+            for (jar in recListPath(Config.global.depsDir).filter { it.extension == "jar" }) {
                 jar.deleteExisting()
             }
         }
     }
 
     fun fetch_deps() {
-        if (LOCK.notExists()) {
+        if (Config.global.lockFile.notExists()) {
             lock_deps()
         }
-        if (DEPS.notExists()) {
-            DEPS.createDirectories()
+        if (Config.global.depsDir.notExists()) {
+            Config.global.depsDir.createDirectories()
         }
         val depFiles = Subprocess.jar(executable().absolutePathString()) {
             arg("fetch")
-            addArgs(*Config.lockedDependencyStrings().toTypedArray())
+            addArgs(*Config.global.lockedDependencyStrings().toTypedArray())
         }.getOrThrow().check_output()
-        println("Copying...")
         depFiles.lines().forEach {
             if (it.isNotEmpty()) {
                 val source = Path(it)
-                println("$source -> ${DEPS / source.name}")
-                source.copyTo(DEPS / source.name, overwrite = true)
+                source.copyTo(Config.global.depsDir / source.name, overwrite = true)
             }
         }
     }

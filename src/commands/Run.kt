@@ -1,9 +1,10 @@
 package kargo.commands
 
+import kargo.Config
 import kargo.Subprocess
+import kargo.toClasspathString
 import kargo.tools.KotlinC
 import net.lingala.zip4j.ZipFile
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
@@ -20,13 +21,9 @@ class Run(val script: Path?, val runArgs: List<String>) : Runnable {
                         "Is there a main() defined?"
                 )
 
-            val classPath = listOf(
-                KotlinC.depsClasspath(), KotlinC.outputJar().absolutePathString()
-            ).joinToString(File.pathSeparator)
-
             Subprocess.new {
                 command = "java"
-                addArgs("-cp", classPath)
+                addArgs("-cp", (Config.global.depsJarFiles() + KotlinC.outputJar()).toClasspathString())
                 arg(mainClass)
                 addArgs(*runArgs.toTypedArray())
             }.getOrThrow().run_check()
@@ -34,4 +31,5 @@ class Run(val script: Path?, val runArgs: List<String>) : Runnable {
             KotlinC.script(script, runArgs)
         }
     }
+
 }

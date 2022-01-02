@@ -1,14 +1,13 @@
 package kargo.tools
 
 import kargo.Config
-import kargo.KARGO_DIR
 import kargo.Subprocess
-import kargo.TARGET
 import kargo.isWindows
-import java.io.File
+import kargo.toClasspathString
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
 
@@ -21,12 +20,13 @@ enum class KotlinCBundle(val relpath: Path) : BundledTool {
 
 object KotlinC : ToolZipBundle<KotlinCBundle> {
     override val version: String by lazy { Config.global.kotlinVersion }
-    override fun zipFileTarget(): Path = KARGO_DIR / "kotlinc.zip"
+    override fun zipFileTarget(): Path = Config.global.kargoDir / "kotlinc.zip"
     // The kotlin zip has a top-level `kotlinc` directory, so we extract directly into KARGO_DIR.
-    override fun folderUnzipTarget(): Path = KARGO_DIR
+    override fun folderUnzipTarget(): Path = Config.global.kargoDir
     override fun downloadURL(version: String): String =
         "https://github.com/JetBrains/kotlin/releases/download/v$version/kotlin-compiler-$version.zip"
-    fun outputJar(): Path = TARGET / "${Config.global.name}.jar"
+    fun outputJar(): Path = Config.global.targetDir / "${Config.global.name}.jar"
+    fun testOutputDir(): Path = Config.global.targetDir / "test" / "classes"
 
     override fun download() {
         val kotlincDir = (folderUnzipTarget() / "kotlinc")
@@ -36,13 +36,12 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         super.download()
     }
 
-    fun depsClasspath(): String = Config.depsJarFiles().joinToString(File.pathSeparator)
 
     fun script(script: Path, scriptArgs: List<String>) {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
             addArgs("-script", script.absolutePathString())
-            addArgs("-cp", listOf(depsClasspath(), outputJar().absolutePathString()).joinToString(File.pathSeparator))
+            addArgs("-cp", (Config.global.depsJarFiles() + outputJar()).toClasspathString())
             if (Config.global.useSerializationPlugin) {
                 arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
             }
@@ -52,17 +51,29 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         }.getOrThrow().run_check()
     }
 
-    fun build() {
+    fun buildFiles(files: Sequence<Path>, target: Path, additionalClasspath: List<Path> = listOf()) {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
-            addArgs("-d", outputJar().absolutePathString())
+            addArgs("-d", target.absolutePathString())
             // TODO(colin): include or not based on package type
             arg("-include-runtime")
-            addArgs("-cp", depsClasspath())
+            addArgs("-cp", (Config.global.depsJarFiles() + additionalClasspath).toClasspathString())
             if (Config.global.useSerializationPlugin) {
                 arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
             }
-            arg(Config.global.srcDir.absolutePathString())
+            files.map { it.absolutePathString() }.forEach(::arg)
         }.getOrThrow().check_output()
+    }
+
+    fun buildTests() {
+        if (testOutputDir().exists()) {
+            testOutputDir().toFile().deleteRecursively()
+        }
+        testOutputDir().createDirectories()
+        buildFiles(Config.global.testFiles(), testOutputDir(), listOf(outputJar()))
+    }
+
+    fun build() {
+        buildFiles(Config.global.sourceFiles(), outputJar())
     }
 }

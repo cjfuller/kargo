@@ -59,6 +59,13 @@ fun main(args: Array<String>) {
         }
     }
 
+    class Test : Subcommand("test", "Run tests using JUnit") {
+        override fun execute() {
+            kargo.commands.Test.run()
+        }
+    }
+
+
     val nativeImageDesc = (
         "Build a native image using GraalVM for the current OS. You must already have " +
             "a working install of GraalVM, including the native-image tool, for this to work."
@@ -72,6 +79,6 @@ fun main(args: Array<String>) {
     val argsForParser = args.takeWhile { it != "--" }
     val argsToPassOn = args.dropWhile { it != "--" }.dropWhile { it == "--" }
 
-    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble(), GraalNativeImage(), Run(argsToPassOn))
+    parser.subcommands(Build(), Init(), Lock(), Deps(), Fmt(), Lint(), Assemble(), GraalNativeImage(), Run(argsToPassOn), Test())
     parser.parse(argsForParser.toTypedArray())
 }

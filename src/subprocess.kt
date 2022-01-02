@@ -53,10 +53,12 @@ data class Subprocess(
                 }
             }
             async {
-                proc.waitFor()
+                val retval = proc.waitFor()
+                if (retval != 0) {
+                    throw CalledSubprocessException(retval)
+                }
             }
         }
-        proc.waitFor()
         return output.toString()
     }
 

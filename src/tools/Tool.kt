@@ -5,7 +5,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.readBytes
-import kargo.KARGO_DIR
+import kargo.Config
 import kotlinx.coroutines.runBlocking
 import net.lingala.zip4j.ZipFile
 import java.nio.file.Path
@@ -51,7 +51,7 @@ interface ToolZipBundle<T : BundledTool> {
             resp.readBytes()
         }
         zipFileTarget().writeBytes(zipContents)
-        if (folderUnzipTarget().exists() && folderUnzipTarget() != KARGO_DIR) {
+        if (folderUnzipTarget().exists() && folderUnzipTarget() != Config.global.kargoDir) {
             folderUnzipTarget().toFile().deleteRecursively()
         }
         if (folderUnzipTarget().notExists()) {

@@ -2,10 +2,14 @@
 name = "kargo"
 kotlin_version = "1.6.10"
 use_serialization_plugin = true
+project_layout = "flat"
 
 [dependencies]
 "org.jetbrains.kotlinx:kotlinx-cli-jvm" = "0.3.4"
 "org.jetbrains.kotlin:kotlin-reflect" = "1.6.10"
+"org.jetbrains.kotlin:kotlin-test-common" = "1.6.10"
+"org.jetbrains.kotlin:kotlin-test-annotations-common" = "1.6.10"
+"org.jetbrains.kotlin:kotlin-test-junit5" = "1.6.10"
 "io.ktor:ktor-client-core" = "1.6.7"
 "io.ktor:ktor-client-apache" = "1.6.7"
 "com.uchuhimo:konf" = "1.1.2"
