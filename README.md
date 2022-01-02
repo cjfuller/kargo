@@ -144,9 +144,8 @@ file in this repository used to build kargo itself.
 
 # Development
 
-kargo is self-hosting, so download a release and use kargo to build itself
-rather than using the legacy gradle build files used for bootstrapping. The
-gradle files will be removed at some later date.
+kargo is self-hosting, so download the latest release and use kargo to build
+itself.
 
 ## Roadmap
 
