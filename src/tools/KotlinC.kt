@@ -40,7 +40,7 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
             addArgs("-script", script.absolutePathString())
-            addArgs("-cp", (Config.global.depsJarFiles() + outputJar()).toClasspathString())
+            addArgs("-cp", (Config.global.depsJarFiles() + listOf(outputJar())).toClasspathString())
             if (Config.global.useSerializationPlugin) {
                 arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
             }

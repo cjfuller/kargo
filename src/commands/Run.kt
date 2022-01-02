@@ -23,7 +23,7 @@ class Run(val script: Path?, val runArgs: List<String>) : Runnable {
 
             Subprocess.new {
                 command = "java"
-                addArgs("-cp", (Config.global.depsJarFiles() + KotlinC.outputJar()).toClasspathString())
+                addArgs("-cp", (Config.global.depsJarFiles() + listOf(KotlinC.outputJar())).toClasspathString())
                 arg(mainClass)
                 addArgs(*runArgs.toTypedArray())
             }.getOrThrow().run_check()
