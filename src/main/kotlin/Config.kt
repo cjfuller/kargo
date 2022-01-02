@@ -23,7 +23,9 @@ data class Config(
             return Config(
                 dependencies = loadedConfig
                     .at("dependencies")
-                    .toValue(),
+                    .toValue<Map<String, String>>()
+                    .map { it.key.trim { it == '"' } to it.value }
+                    .toMap(),
                 kotlinVersion = loadedConfig.at("package.kotlin_version").toValue(),
                 name = loadedConfig.at("package.name").toValue(),
                 useSerializationPlugin = try {
