@@ -1,5 +1,6 @@
 # kargo
-A command-line build tool for kotlin inspired by rust's [cargo](https://doc.rust-lang.org/cargo/). 
+
+A command-line build tool for kotlin inspired by rust's [cargo](https://doc.rust-lang.org/cargo/).
 
 # Installation
 
@@ -78,6 +79,7 @@ Builds your project using the kotlin CLI compiler. This will produce a jar file
 in `target/<project.name>.jar` containing your code and the kotlin runtime.
 
 ### run
+
 `kargo run [--script <path to kts script>] [-- <args to main class or script>]`
 
 Run the project's main class with the provided args, or alternately the
@@ -116,6 +118,26 @@ any errors.
 
 Uses [`ktlint`](https://ktlint.github.io/) to format your kotlin sources
 in-place. This command is known not to work on java 17.
+:w
+
+### test
+
+`kargo test`
+Uses JUnit5 to run the project's tests, which should do annotations / assertions via the
+standard `kotlin.test` library. (You must also add a
+`org.jetbrains.kotlin:kotlin-test-junit5` dependency to `Kargo.toml` for test running.)
+
+To avoid confusion / mistakenly thinking that tests passed when they didn't,
+this will run `kargo build` before running tests.
+
+Test discovery requires some knowledge of project layout. By default, kargo will
+discover all test files ending in `_test.kt` within the `src` directory. To use
+the more conventional `src/{main,test}/kotlin` project layout, add
+`project_layout = "classic"` to the package section of the `Kargo.toml` file.
+
+It's a known issue that we currently don't discover functions annotated with
+@Test at top-level in test files. As a workaround, place them within classes
+whose name starts or ends with `Test`.
 
 ## Kargo.toml reference
 
@@ -131,6 +153,10 @@ in-place. This command is known not to work on java 17.
 - `use_serialization_plugin` (optional, default `false`): if you use
   `kotlinx.serialization` in your project, set this to `true` to enable the
   corresponding compiler plugin.
+- `project_layout` (optional, one of `classic` or `flat`, default `flat`): project
+  layout used to discover tests. `flat` allows test files alongside code, in
+  files ending in `_test.kt`. `classic` uses the more conventional layout where
+  tests are in `src/test` (and non-test code is in `src/main`).
 
 `[dependencies]`: this section is required but can be empty
 
@@ -151,15 +177,18 @@ itself.
 
 ### Short-term
 
-- `kargo test` for running tests (and exclusion of test files from builds, etc.)
+- test configuration options for running tests by tag, or specific tests
+- test discovery for top-level functions
 - a number of other configuration options (option to turn off including the
   kotlin runtime in the jar, support of other source / test layouts, etc.)
 
 ### Medium-term
+
 - better support for building / publishing libraries, rather than just runnable
   applications
 
 ### Long-term
+
 - kotlin js/native support
 
 ## License

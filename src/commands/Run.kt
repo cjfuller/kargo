@@ -31,5 +31,4 @@ class Run(val script: Path?, val runArgs: List<String>) : Runnable {
             KotlinC.script(script, runArgs)
         }
     }
-
 }

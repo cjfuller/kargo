@@ -36,7 +36,6 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         super.download()
     }
 
-
     fun script(script: Path, scriptArgs: List<String>) {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
