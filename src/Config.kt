@@ -4,7 +4,6 @@ import com.uchuhimo.konf.source.toml
 import com.uchuhimo.konf.toValue
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.readLines
@@ -41,16 +40,17 @@ inline fun<reified T> optionalKey(config: com.uchuhimo.konf.Config, key: String,
 }
 
 data class Config(
+    val root: Path,
     val dependencies: Map<String, String>,
-    val srcDir: Path = Path("src"),
+    val srcDir: Path = root / Path("src"),
     val kotlinVersion: String,
     val name: String,
     val useSerializationPlugin: Boolean,
     val projectLayout: ProjectLayout = ProjectLayout.FLAT,
-    val kargoDir: Path = DefaultPaths.KARGO_DIR,
-    val lockFile: Path = DefaultPaths.LOCK,
-    val targetDir: Path = DefaultPaths.TARGET,
-    val depsDir: Path = DefaultPaths.DEPS,
+    val kargoDir: Path = root / DefaultPaths.KARGO_DIR,
+    val lockFile: Path = root / DefaultPaths.LOCK,
+    val targetDir: Path = root / DefaultPaths.TARGET,
+    val depsDir: Path = root / DefaultPaths.DEPS,
 ) {
 
     fun lockedDependencyStrings(): List<String> =
@@ -75,10 +75,11 @@ data class Config(
         dependencies.map { "${it.key}:${it.value}" }
 
     companion object {
-        fun load(): Config {
+        fun load(configPath: Path = DefaultPaths.CONFIG): Config {
             val loadedConfig = com.uchuhimo.konf.Config()
-                .from.toml.string(DefaultPaths.CONFIG.readText())
+                .from.toml.string(configPath.readText())
             return Config(
+                root = configPath.toAbsolutePath().parent,
                 dependencies = loadedConfig
                     .at("dependencies")
                     .toValue<Map<String, String>>()

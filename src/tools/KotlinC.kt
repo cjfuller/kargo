@@ -40,7 +40,9 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
             addArgs("-script", script.absolutePathString())
-            addArgs("-cp", (Config.global.depsJarFiles() + listOf(outputJar())).toClasspathString())
+            (Config.global.depsJarFiles() + listOf(outputJar())).toClasspathString()?.let {
+                addArgs("-cp", it)
+            }
             if (Config.global.useSerializationPlugin) {
                 arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
             }
@@ -56,7 +58,9 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
             addArgs("-d", target.absolutePathString())
             // TODO(colin): include or not based on package type
             arg("-include-runtime")
-            addArgs("-cp", (Config.global.depsJarFiles() + additionalClasspath).toClasspathString())
+            (Config.global.depsJarFiles() + additionalClasspath).toClasspathString()?.let {
+                addArgs("-cp", it)
+            }
             if (Config.global.useSerializationPlugin) {
                 arg("-Xplugin=${path(KotlinCBundle.SER_PLUGIN).absolutePathString()}")
             }

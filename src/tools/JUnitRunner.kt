@@ -27,7 +27,7 @@ object JUnitRunner : Tool {
             )
             ).toClasspathString()
         Subprocess.jar(executable().absolutePathString()) {
-            addArgs("-cp", classPath)
+            classPath?.let { addArgs("-cp", it) }
             arg("--fail-if-no-tests")
             arg("--disable-banner")
             addArgs("-n", ".+")

@@ -11,8 +11,8 @@ class UtilTest {
     fun testIsTestFileFlat() {
         val baseConfig = Config.load()
         Config.withGlobal(baseConfig.copy(projectLayout = ProjectLayout.FLAT)) {
-            assertTrue((Path("some") / "path" / "to" / "my_test.kt").isTestFile())
-            assertFalse((Path("src") / "test" / "kotlin" / "TestSomething.kt").isTestFile())
+            assertTrue((Config.global.srcDir / "some" / "path" / "to" / "my_test.kt").isTestFile())
+            assertFalse((Config.global.srcDir / "test" / "kotlin" / "TestSomething.kt").isTestFile())
         }
     }
 
@@ -20,8 +20,8 @@ class UtilTest {
     fun testIsTestFileClassic() {
         val baseConfig = Config.load()
         Config.withGlobal(baseConfig.copy(projectLayout = ProjectLayout.CLASSIC)) {
-            assertFalse((Path("some") / "path" / "to" / "my_test.kt").isTestFile())
-            assertTrue((Path("src") / "test" / "kotlin" / "TestSomething.kt").isTestFile())
+            assertFalse((Config.global.srcDir / "some" / "path" / "to" / "my_test.kt").isTestFile())
+            assertTrue((Config.global.srcDir / "test" / "kotlin" / "TestSomething.kt").isTestFile())
         }
     }
 }

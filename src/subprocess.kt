@@ -15,7 +15,7 @@ data class Subprocess(
     private var stdout: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT,
     private var stderr: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT,
     private var captureOut: Boolean = false,
-    var workingDirectory: Path? = null
+    var workingDirectory: Path = Config.global.root
 ) {
     fun arg(a: String) {
         this.args.add(a)
@@ -28,10 +28,10 @@ data class Subprocess(
     }
 
     fun run(): Result<Process> = this.runCatching {
-        ProcessBuilder(this.command, *this.args.toTypedArray())
+        ProcessBuilder(command, *args.toTypedArray())
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .redirectOutput(stdout)
-            .let { workingDirectory?.let { dir -> it.directory(dir.toFile()) } ?: it }
+            .directory(workingDirectory.toFile())
             .redirectError(stderr)
             .start()
     }

@@ -30,5 +30,8 @@ fun recListPath(p: Path): Sequence<Path> = sequence {
     }
 }
 
-fun List<Path>.toClasspathString(): String =
+fun List<Path>.toClasspathString(): String? = if (isEmpty()) {
+    null
+} else {
     joinToString(File.pathSeparator) { it.absolutePathString() }
+}
