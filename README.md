@@ -118,7 +118,6 @@ any errors.
 
 Uses [`ktlint`](https://ktlint.github.io/) to format your kotlin sources
 in-place. This command is known not to work on java 17.
-:w
 
 ### test
 
