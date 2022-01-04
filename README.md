@@ -36,13 +36,14 @@ one line per dependency in the `[dependencies]` section of your `Kargo.toml`.
 After you initially set up your project and whenever you add a dependency, you
 should lock the dependencies with `kargo lock`. This will resolve all direct and
 transitive dependencies to consistent versions and write them to the
-`Kargo.lock` file. (You should commit `Kargo.lock` to version control unless
-you're building a library for other projects to consume.)
+`Kargo.lock` file (as well as a `Kargo.test.lock` file for test-only
+dependencies. (You should commit both lock files to version control unless you're
+building a library for other projects to consume.)
 
 Once you've locked dependencies (and every time you re-lock them), run `kargo deps`,
-which will vendor the locked version of all dependencies into `.kargo/deps`. (If
-needed, you can put the jars in this directory on the classpath for your editor
-/ IDE for completion and syntax highlighting.)
+which will vendor the locked version of all dependencies into `.kargo/deps` and
+`.kargo/test/deps`. (If needed, you can put the jars in these directories on the
+classpath for your editor / IDE for completion and syntax highlighting.)
 
 ## Command reference
 
@@ -60,8 +61,9 @@ or if you update kargo itself.
 
 Reads depdencies from `Kargo.toml`, resolves their transitive dependencies, and
 writes the complete set of all direct and transitive dependencies pinned to
-consistent versions to `Kargo.lock`. You should run this whenever you update the
-dependencies in `Kargo.toml`.
+consistent versions to `Kargo.lock` (and `Kargo.test.lock` for test-only
+dependencies). You should run this whenever you update the dependencies in
+`Kargo.toml`.
 
 ### deps
 
@@ -123,8 +125,9 @@ in-place. This command is known not to work on java 17.
 
 `kargo test`
 Uses JUnit5 to run the project's tests, which should do annotations / assertions via the
-standard `kotlin.test` library. (You must also add a
-`org.jetbrains.kotlin:kotlin-test-junit5` dependency to `Kargo.toml` for test running.)
+standard `kotlin.test` library. The `org.jetbrains.kotlin:kotlin-test-junit5` runner
+dependency is required and automatically added to your test-only dependencies, along with
+`kotlin-test-common` and `kotlin-test-annotations-common`.
 
 To avoid confusion / mistakenly thinking that tests passed when they didn't,
 this will run `kargo build` before running tests.
@@ -162,6 +165,19 @@ whose name starts or ends with `Test`.
 Each key in this section is the maven coordinates of the dependency, minus the
 version portion, and the value is the version.
 
+`[test.dependencies]`: optional
+
+As for `[dependencies]`, each key in this section is the maven coordinates of
+the dependency, minus the version portion, and the value is the version. These
+dependencies are only included when compiling and running tests.
+
+The following dependencies are automatically included and do not need to be
+written out explicitly:
+
+- `org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version`
+- `org.jetbrains.kotlin:kotlin-test-common:$kotlin_version`
+- `org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlin_version`
+
 ### Example
 
 See the [`Kargo.toml`](https://github.com/cjfuller/kargo/blob/main/Kargo.toml)
@@ -179,7 +195,7 @@ itself.
 - test configuration options for running tests by tag, or specific tests
 - test discovery for top-level functions
 - a number of other configuration options (option to turn off including the
-  kotlin runtime in the jar, support of other source / test layouts, etc.)
+  kotlin runtime in the jar, etc.)
 
 ### Medium-term
 

@@ -26,11 +26,7 @@ enum class ProjectLayout {
 }
 
 private object DefaultPaths {
-    val KARGO_DIR = Path(".kargo")
     val CONFIG = Path("Kargo.toml")
-    val LOCK = Path("Kargo.lock")
-    val TARGET = Path("target")
-    val DEPS = KARGO_DIR / "deps"
 }
 
 inline fun<reified T> optionalKey(config: com.uchuhimo.konf.Config, key: String, default: () -> T): T = try {
@@ -42,22 +38,30 @@ inline fun<reified T> optionalKey(config: com.uchuhimo.konf.Config, key: String,
 data class Config(
     val root: Path,
     val dependencies: Map<String, String>,
+    val testDependencies: Map<String, String>,
     val srcDir: Path = root / Path("src"),
     val kotlinVersion: String,
     val name: String,
     val useSerializationPlugin: Boolean,
     val projectLayout: ProjectLayout = ProjectLayout.FLAT,
-    val kargoDir: Path = root / DefaultPaths.KARGO_DIR,
-    val lockFile: Path = root / DefaultPaths.LOCK,
-    val targetDir: Path = root / DefaultPaths.TARGET,
-    val depsDir: Path = root / DefaultPaths.DEPS,
 ) {
+    val kargoDir: Path = root / ".kargo"
+    val lockFile: Path = root / "Kargo.lock"
+    val testLockFile: Path = root / "Kargo.test.lock"
+    val targetDir: Path = root / "target"
+    val depsDir: Path = kargoDir / "deps"
+    val testDepsDir: Path = kargoDir / "test" / "deps"
 
-    fun lockedDependencyStrings(): List<String> =
+    fun lockedDependencyStrings(lockFile: Path): List<String> =
         lockFile.readLines()
 
     fun depsJarFiles(): List<Path> =
         recListPath(depsDir)
+            .filter { it.extension == "jar" }
+            .toList()
+
+    fun testDepsJarFiles(): List<Path> =
+        recListPath(testDepsDir)
             .filter { it.extension == "jar" }
             .toList()
 
@@ -71,13 +75,17 @@ data class Config(
             .filter { it.extension == "kt" }
             .filter { it.isTestFile() }
 
-    fun dependencyStrings(): List<String> =
-        dependencies.map { "${it.key}:${it.value}" }
-
     companion object {
+        fun commonTestDependencies(kotlinVersion: String): Map<String, String> = mapOf(
+            "org.jetbrains.kotlin:kotlin-test-common" to kotlinVersion,
+            "org.jetbrains.kotlin:kotlin-test-annotations-common" to kotlinVersion,
+            "org.jetbrains.kotlin:kotlin-test-junit5" to kotlinVersion,
+        )
+
         fun load(configPath: Path = DefaultPaths.CONFIG): Config {
             val loadedConfig = com.uchuhimo.konf.Config()
                 .from.toml.string(configPath.readText())
+            val kotlinVersion: String = loadedConfig.at("package.kotlin_version").toValue()
             return Config(
                 root = configPath.toAbsolutePath().parent,
                 dependencies = loadedConfig
@@ -85,10 +93,16 @@ data class Config(
                     .toValue<Map<String, String>>()
                     .map { it.key.trim { it == '"' } to it.value }
                     .toMap(),
-                kotlinVersion = loadedConfig.at("package.kotlin_version").toValue(),
+                kotlinVersion = kotlinVersion,
                 name = loadedConfig.at("package.name").toValue(),
-                useSerializationPlugin = optionalKey(loadedConfig,"package.use_serialization_plugin" ) { false },
-                projectLayout = optionalKey(loadedConfig, "package.project_layout") { "flat"}.let(ProjectLayout::of)
+                testDependencies = commonTestDependencies(kotlinVersion) +
+                    optionalKey<Map<String, String>>(loadedConfig, "test.dependencies") { mapOf() }
+                    .map { it.key.trim { it == '"' } to it.value }
+                    .toMap(),
+            useSerializationPlugin = optionalKey(
+                    loadedConfig,"package.use_serialization_plugin" ) { false },
+                projectLayout = optionalKey(
+                    loadedConfig, "package.project_layout") { "flat"}.let(ProjectLayout::of)
             )
         }
 

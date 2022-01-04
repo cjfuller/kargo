@@ -22,7 +22,7 @@ object JUnitRunner : Tool {
         KotlinC.buildTests()
         val testClasses = recListPath(KotlinC.testOutputDir()).filter { it.extension == "class" }
         val classPath = (
-            Config.global.depsJarFiles() + listOf(
+            Config.global.depsJarFiles() + Config.global.testDepsJarFiles() + listOf(
                 KotlinC.outputJar(),
                 KotlinC.testOutputDir(),
             )

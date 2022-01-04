@@ -82,7 +82,10 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
             testOutputDir().toFile().deleteRecursively()
         }
         testOutputDir().createDirectories()
-        buildFiles(Config.global.testFiles(), testOutputDir(), listOf(outputJar()))
+        buildFiles(
+            Config.global.testFiles(), testOutputDir(),
+            listOf(outputJar()) + Config.global.testDepsJarFiles()
+        )
     }
 
     fun build() {
