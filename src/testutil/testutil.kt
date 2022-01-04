@@ -4,7 +4,6 @@ import kargo.Config
 import kargo.commands.Init
 import java.nio.file.Path
 import java.util.UUID
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.div
