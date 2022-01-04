@@ -57,7 +57,8 @@ interface ToolZipBundle<T : BundledTool> {
         if (folderUnzipTarget().notExists()) {
             folderUnzipTarget().createDirectories()
         }
-        ZipFile(zipFileTarget().absolutePathString()).extractAll(folderUnzipTarget().absolutePathString())
+        ZipFile(zipFileTarget().absolutePathString())
+            .extractAll(folderUnzipTarget().absolutePathString())
     }
 
     fun path(tool: T): Path =

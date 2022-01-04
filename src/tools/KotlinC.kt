@@ -12,7 +12,11 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 
 enum class KotlinCBundle(val relpath: Path) : BundledTool {
-    KOTLINC(if (isWindows()) { Path("kotlinc/bin/kotlinc.bat") } else { Path("kotlinc/bin/kotlinc") }),
+    KOTLINC(
+        if (isWindows()) {
+            Path("kotlinc/bin/kotlinc.bat")
+        } else { Path("kotlinc/bin/kotlinc") }
+    ),
     SER_PLUGIN(Path("kotlinc/lib/kotlinx-serialization-compiler-plugin.jar"));
 
     override fun path(): Path = relpath
@@ -24,7 +28,8 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
     // The kotlin zip has a top-level `kotlinc` directory, so we extract directly into KARGO_DIR.
     override fun folderUnzipTarget(): Path = Config.global.kargoDir
     override fun downloadURL(version: String): String =
-        "https://github.com/JetBrains/kotlin/releases/download/v$version/kotlin-compiler-$version.zip"
+        "https://github.com/JetBrains/kotlin/releases/download" +
+            "/v$version/kotlin-compiler-$version.zip"
     fun outputJar(): Path = Config.global.targetDir / "${Config.global.name}.jar"
     fun testOutputDir(): Path = Config.global.targetDir / "test" / "classes"
 
@@ -52,7 +57,11 @@ object KotlinC : ToolZipBundle<KotlinCBundle> {
         }.getOrThrow().run_check()
     }
 
-    fun buildFiles(files: Sequence<Path>, target: Path, additionalClasspath: List<Path> = listOf()) {
+    fun buildFiles(
+        files: Sequence<Path>,
+        target: Path,
+        additionalClasspath: List<Path> = listOf()
+    ) {
         Subprocess.new {
             command = path(KotlinCBundle.KOTLINC).absolutePathString()
             addArgs("-d", target.absolutePathString())

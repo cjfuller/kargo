@@ -15,7 +15,8 @@ object JUnitRunner : Tool {
     override val version = "1.8.2"
     override fun executable(): Path = Config.global.kargoDir / "junit-standalone.jar"
     override fun downloadURL(version: String): String =
-        "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/$version/junit-platform-console-standalone-$version.jar"
+        "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone" +
+            "/$version/junit-platform-console-standalone-$version.jar"
 
     fun test() {
         KotlinC.buildTests()
@@ -32,7 +33,11 @@ object JUnitRunner : Tool {
             arg("--disable-banner")
             addArgs("-n", ".+")
             for (testFile in testClasses) {
-                addArgs("-c", testFile.relativeTo(KotlinC.testOutputDir()).invariantSeparatorsPathString.replace('/', '.').replace(".class", ""))
+                addArgs(
+                    "-c",
+                    testFile.relativeTo(KotlinC.testOutputDir())
+                        .invariantSeparatorsPathString.replace('/', '.').replace(".class", "")
+                )
             }
         }.getOrThrow().run_check()
     }

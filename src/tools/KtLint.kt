@@ -21,7 +21,8 @@ object KtLint : Tool {
                 arg("-F")
             }
             // TODO(colin): what about .kts files?
-            val glob = listOf(Config.global.srcDir.absolutePathString(), "**", "*.kt").joinToString(File.separator)
+            val glob = listOf(Config.global.srcDir.absolutePathString(), "**", "*.kt")
+                .joinToString(File.separator)
             arg(glob)
         }.getOrThrow().run_check()
     }

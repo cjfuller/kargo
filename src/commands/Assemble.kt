@@ -29,7 +29,13 @@ object Assemble : Runnable {
         get() = Config.global.kargoDir / "assembly"
     val metaInf = Path("META-INF")
     val outputJar: Path
-        get() = (Config.global.targetDir / "assembly" / (KotlinC.outputJar().relativeTo(Config.global.targetDir)))
+        get() = (
+            Config.global.targetDir / "assembly" / (
+                KotlinC.outputJar().relativeTo(
+                    Config.global.targetDir
+                )
+                )
+            )
 
     val windowsStub = """
         @echo off
@@ -69,7 +75,8 @@ object Assemble : Runnable {
                     targetPath.parent.createDirectories()
                 }
                 if (targetPath.exists()) {
-                    val targetDigest = MessageDigest.getInstance("SHA-1").digest(targetPath.readBytes())
+                    val targetDigest = MessageDigest.getInstance("SHA-1")
+                        .digest(targetPath.readBytes())
                     val sourceDigest = MessageDigest.getInstance("SHA-1").digest(file.readBytes())
                     if (MessageDigest.isEqual(targetDigest, sourceDigest)) {
                         continue
